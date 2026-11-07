@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>দৃষ্টি রেখা - HD ফটোকার্ড জেনারেটর</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif, 'SolaimanLipi', 'Kalpurush';
+            background-color: #121824;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #43b581;
+            text-align: center;
+        }
+
+        .main-wrapper {
+            display: flex;
+            flex-direction: row;
+            gap: 30px;
+            background-color: #1a2233;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            max-width: 1400px;
+            width: 100%;
+        }
+
+        /* Responsive Preview Container */
+        .preview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 550px;
+            margin: 0 auto;
+        }
+
+        .card-scaler-box {
+            width: 100%;
+            position: relative;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.7);
+            border-radius: 4px;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        /* Absolute Original 1920px Base Canvas */
+        #photocard {
+            width: 1920px;
+            height: 1920px; /* Default height with ad */
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform-origin: top left;
+            background-color: #006D17;
+            overflow: hidden;
+            font-family: 'SolaimanLipi', 'Kalpurush', sans-serif;
+        }
+
+        /* 1. Feature Image Frame (1920x1080) */
+        .feature-img-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1920px;
+            height: 1080px;
+            overflow: hidden;
+            background-color: #0d131d;
+            z-index: 1;
+        }
+
+        #feature-img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform-origin: center center;
+        }
+
+        .placeholder-text {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5865f2;
+            font-size: 45px;
+            border: 4px dashed #2f3850;
+        }
+
+        /* 2. Date Box (Y: 88px, Height: 76px, Left: 1495.857px, Width: 426px) */
+        .date-box {
+            position: absolute;
+            top: 88px;
+            left: 1495.857px;
+            width: 426px;
+            height: 76px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 38px;
+            font-weight: bold;
+            z-index: 10;
+            background-color: rgba(0, 109, 23, 0.30); /* 30% green opacity */
+            border-bottom: 3px solid #ffffff;
+        }
+
+        /* 3. Logo Layer (Y: 1011px to 1142px = 131px height, Topmost layer z-index 100, 2x Scale) */
+        .logo-container {
+            position: absolute;
+            top: 1011px;
+            left: 0;
+            width: 1920px;
+            height: 131px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100; /* Top Layer */
+            pointer-events: none;
+        }
+
+        .logo-container img {
+            max-height: 131px;
+            transform: scale(2); /* 2x Larger scale */
+            transform-origin: center center;
+        }
+
+        /* 4. White Line (Y: 1072px to 1080px = 8px Height) */
+        .white-line {
+            position: absolute;
+            top: 1072px;
+            left: 0;
+            width: 1920px;
+            height: 8px;
+            background-color: #ffffff;
+            z-index: 5;
+        }
+
+        /* 5. Headline Box (Y: 1153px to 1488px = 335px Height) */
+        .headline-wrapper {
+            position: absolute;
+            top: 1153px;
+            left: 0;
+            width: 1920px;
+            height: 335px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 100px;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .headline-text {
+            color: #ffffff;
+            font-size: 72px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.35;
+            width: 100%;
+            word-wrap: break-word;
+        }
+
+        /* 7. Comment Text (Y: 1488px to 1544px = 56px Height) */
+        .comment-text-box {
+            position: absolute;
+            top: 1488px;
+            left: 0;
+            width: 1920px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 34px;
+            font-weight: 600;
+            z-index: 10;
+        }
+
+        /* 7. Social & Website Bar (Y: 1542px to 1631px = 89px Height, Gradient #101F3C) */
+        .social-bar {
+            position: absolute;
+            top: 1542px;
+            left: 0;
+            width: 1920px;
+            height: 89px;
+            z-index: 10;
+            background: linear-gradient(
+                90deg,
+                rgba(16, 31, 60, 0) 0px,
+                rgba(16, 31, 60, 0.35) 150px,
+                rgba(16, 31, 60, 1) 300px,
+                rgba(16, 31, 60, 1) 1620px,
+                rgba(16, 31, 60, 0.35) 1770px,
+                rgba(16, 31, 60, 0) 1920px
+            );
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .site-link {
+            position: absolute;
+            left: 400px;
+            color: #ffffff;
+            font-size: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .social-links {
+            position: absolute;
+            right: 400px;
+            color: #ffffff;
+            font-size: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .social-icon {
+            width: 28px;
+            height: 28px;
+            fill: #ffffff;
+        }
+
+        /* 8. Ad Banner Frame (Y: 1642px to 1920px = 278px Height) */
+        .ad-banner-frame {
+            position: absolute;
+            top: 1642px;
+            left: 0;
+            width: 1920px;
+            height: 278px;
+            z-index: 10;
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        .ad-banner-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Control Panel Styles */
+        .controls-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .panel-box {
+            background-color: #232d3f;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
+        .panel-box h3 {
+            font-size: 16px;
+            color: #38bdf8;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 6px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: #cbd5e1;
+        }
+
+        input[type="text"], textarea, input[type="date"], select {
+            width: 100%;
+            padding: 10px;
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 65px;
+        }
+
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .slider-group label {
+            width: 120px;
+            margin-bottom: 0;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            accent-color: #38bdf8;
+        }
+
+        .btn-action {
+            background-color: #334155;
+            color: #f87171;
+            border: 1px solid #475569;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .btn-action:hover {
+            background-color: #475569;
+        }
+
+        .btn-today {
+            background-color: #0284c7;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .btn-download {
+            background-color: #16a34a;
+            color: #ffffff;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .btn-download:hover {
+            background-color: #15803d;
+        }
+
+        .upload-btn {
+            display: block;
+            padding: 10px;
+            background-color: #0f172a;
+            color: #94a3b8;
+            text-align: center;
+            border: 1px dashed #475569;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .upload-btn:hover {
+            border-color: #38bdf8;
+            color: #fff;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 950px) {
+            .main-wrapper {
+                flex-direction: column;
+            }
+            .preview-container {
+                max-width: 100%;
+            }
+        }
+    </style>
+    <!-- HTML2Canvas Library for HD Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+    <h1>দৃষ্টি রেখা (Drishti Rekha) - ফটোকার্ড জেনারেটর HD</h1>
+
+    <div class="main-wrapper">
+        <!-- Preview Canvas Panel -->
+        <div class="preview-container">
+            <div class="card-scaler-box" id="scaler-box">
+                <div id="photocard">
+                    <!-- 1. Feature Image Layer -->
+                    <div class="feature-img-wrapper">
+                        <div id="placeholder-txt" class="placeholder-text">ফিচার ছবি আপলোড করুন</div>
+                        <img id="feature-img" src="" alt="" style="display: none;">
+                    </div>
+
+                    <!-- 2. Date Layer -->
+                    <div class="date-box" id="card-date-disp">০৮ নভেম্বর ২০২৬</div>
+
+                    <!-- 3. Fixed Topmost Logo Layer (2x Size) -->
+                    <div class="logo-container">
+                        <img src="https://www.drishtirekha.com/wp-content/uploads/2026/11/dr-rekha-hd-logo.png" alt="Drishti Rekha Logo">
+                    </div>
+
+                    <!-- 4. White Divider Line -->
+                    <div class="white-line"></div>
+
+                    <!-- 5. Headline Layer -->
+                    <div class="headline-wrapper">
+                        <div class="headline-text" id="card-headline-disp">এখানে সংবাদের শিরোনাম প্রদর্শিত হবে</div>
+                    </div>
+
+                    <!-- 7. Comments Extra Layer -->
+                    <div class="comment-text-box" id="comment-box">বিস্তারিত কমেন্টে</div>
+
+                    <!-- 7. Social Media & Web Gradient Bar -->
+                    <div class="social-bar">
+                        <div class="site-link">
+                            <svg class="social-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                            www.drishtirekha.com
+                        </div>
+                        <div class="social-links">
+                            <div class="icon-group">
+                                <svg class="social-icon" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                <svg class="social-icon" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                                <svg class="social-icon" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                                <svg class="social-icon" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                                <svg class="social-icon" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                            </div>
+                            /drishtirekhabd
+                        </div>
+                    </div>
+
+                    <!-- 8. Fixed Advertisement Banner Layer -->
+                    <div class="ad-banner-frame" id="ad-banner-box">
+                        <img id="ad-img-disp" src="https://www.drishtirekha.com/wp-content/uploads/2026/07/mukti-clinic.jpg" alt="Mukti Clinic Ad">
+                    </div>
+
+                </div>
+            </div>
+            <p style="margin-top: 10px; color: #94a3b8; font-size: 13px;">লাইভ অটো-ফিট প্রিভিউ</p>
+        </div>
+
+        <!-- Controls Right Panel -->
+        <div class="controls-container">
+            <!-- Image Panel -->
+            <div class="panel-box">
+                <h3>১. ফিচার ছবি কাস্টমাইজেশন</h3>
+                <label class="upload-btn">
+                    📷 ডিভাইস থেকে নতুন ছবি সিলেক্ট করুন
+                    <input type="file" id="img-input" accept="image/*">
+                </label>
+
+                <div class="slider-group">
+                    <label>ছবি জুম (Scale):</label>
+                    <input type="range" id="img-scale" min="1" max="3" step="0.05" value="1">
+                    <button class="btn-action" id="reset-scale">রিসেট</button>
+                </div>
+                <div class="slider-group">
+                    <label>ডানে-বামে (Pan X):</label>
+                    <input type="range" id="img-pan-x" min="-600" max="600" step="5" value="0">
+                    <button class="btn-action" id="reset-pan-x">রিসেট</button>
+                </div>
+                <div class="slider-group">
+                    <label>উপরে-নিচে (Pan Y):</label>
+                    <input type="range" id="img-pan-y" min="-600" max="600" step="5" value="0">
+                    <button class="btn-action" id="reset-pan-y">রিসেট</button>
+                </div>
+            </div>
+
+            <!-- Date Panel -->
+            <div class="panel-box">
+                <h3>২. তারিখ অপশন</h3>
+                <input type="date" id="date-picker">
+                <button type="button" class="btn-today" id="btn-auto-date">চলতি তারিখ সেট করুন</button>
+            </div>
+
+            <!-- Headline Panel -->
+            <div class="panel-box">
+                <h3>৩. সংবাদ শিরোনাম</h3>
+                <textarea id="headline-input" placeholder="সংবাদ শিরোনাম লিখুন...">দৃষ্টি রেখা ডট কম-এ আপনাকে স্বাগতম</textarea>
+
+                <div class="slider-group">
+                    <label>ফন্ট সাইজ:</label>
+                    <input type="range" id="font-size" min="40" max="110" value="72">
+                </div>
+                <div class="slider-group">
+                    <label>সাইড মার্জিন (চাপানো):</label>
+                    <input type="range" id="side-margin" min="60" max="450" value="100">
+                </div>
+            </div>
+
+            <!-- Footer & Ad Options -->
+            <div class="panel-box">
+                <h3>৪. অতিরিক্ত অপশন ও বিজ্ঞাপন</h3>
+                <label class="toggle-row">
+                    <input type="checkbox" id="toggle-comment" checked>
+                    "বিস্তারিত কমেন্টে" লেখা চালু রাখুন
+                </label>
+                <br>
+                <label class="toggle-row">
+                    <input type="checkbox" id="toggle-ad" checked>
+                    বিজ্ঞাপন ব্যানার যুক্ত রাখুন (চালু: ১৯২০px, বন্ধ: ১৬৪২px)
+                </label>
+                <br>
+                <label>বিজ্ঞাপন ব্যানার পরিবর্তন (Cycle):</label>
+                <select id="ad-cycle-select">
+                    <option value="https://www.drishtirekha.com/wp-content/uploads/2026/07/mukti-clinic.jpg">বিজ্ঞাপন ব্যানার ০১ - মুক্তি ক্লিনিক ও ডায়াগনস্টিক সেন্টার</option>
+                </select>
+            </div>
+
+            <!-- Export Button -->
+            <button class="btn-download" id="download-btn">ফটোকার্ড ডাউনলোড করুন (HD JPG)</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const photocard = document.getElementById('photocard');
+        const scalerBox = document.getElementById('scaler-box');
+
+        const imgInput = document.getElementById('img-input');
+        const featureImg = document.getElementById('feature-img');
+        const placeholderTxt = document.getElementById('placeholder-txt');
+        const imgScale = document.getElementById('img-scale');
+        const imgPanX = document.getElementById('img-pan-x');
+        const imgPanY = document.getElementById('img-pan-y');
+
+        const datePicker = document.getElementById('date-picker');
+        const cardDateDisp = document.getElementById('card-date-disp');
+        const btnAutoDate = document.getElementById('btn-auto-date');
+
+        const headlineInput = document.getElementById('headline-input');
+        const cardHeadlineDisp = document.getElementById('card-headline-disp');
+        const fontSizeInput = document.getElementById('font-size');
+        const sideMarginInput = document.getElementById('side-margin');
+
+        const toggleComment = document.getElementById('toggle-comment');
+        const commentBox = document.getElementById('comment-box');
+
+        const toggleAd = document.getElementById('toggle-ad');
+        const adBannerBox = document.getElementById('ad-banner-box');
+        const adImgDisp = document.getElementById('ad-img-disp');
+        const adCycleSelect = document.getElementById('ad-cycle-select');
+
+        const downloadBtn = document.getElementById('download-btn');
+
+        // Layout Updater
+        function refreshCardLayout() {
+            const hasAd = toggleAd.checked;
+            const currentHeight = hasAd ? 1920 : 1642;
+
+            photocard.style.height = `${currentHeight}px`;
+            adBannerBox.style.display = hasAd ? 'block' : 'none';
+
+            // Aspect ratio calculation for scaling container
+            scalerBox.style.paddingTop = `${(currentHeight / 1920) * 100}%`;
+            
+            updateScale();
+        }
+
+        function updateScale() {
+            const wrapperWidth = scalerBox.clientWidth;
+            const scale = wrapperWidth / 1920;
+            photocard.style.transform = `scale(${scale})`;
+        }
+
+        window.addEventListener('resize', updateScale);
+
+        // Date Helpers
+        function toBanglaNum(str) {
+            const banglaDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+            return String(str).replace(/[0-9]/g, digit => banglaDigits[digit]);
+        }
+
+        function formatBanglaDate(date) {
+            const months = [
+                'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+                'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
+            ];
+            const day = toBanglaNum(String(date.getDate()).padStart(2, '0'));
+            const month = months[date.getMonth()];
+            const year = toBanglaNum(String(date.getFullYear()));
+
+            return `${day} ${month} ${year}`;
+        }
+
+        function setTodayDate() {
+            const today = new Date();
+            const y = today.getFullYear();
+            const m = String(today.getMonth() + 1).padStart(2, '0');
+            const d = String(today.getDate()).padStart(2, '0');
+            
+            datePicker.value = `${y}-${m}-${d}`;
+            cardDateDisp.textContent = formatBanglaDate(today);
+        }
+
+        btnAutoDate.addEventListener('click', setTodayDate);
+        datePicker.addEventListener('change', (e) => {
+            if (e.target.value) {
+                const parts = e.target.value.split('-');
+                const selectedDate = new Date(parts[0], parts[1] - 1, parts[2]);
+                cardDateDisp.textContent = formatBanglaDate(selectedDate);
+            }
+        });
+
+        // Feature Image Handlers
+        imgInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    featureImg.src = event.target.result;
+                    featureImg.style.display = 'block';
+                    placeholderTxt.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function applyImgTransform() {
+            const s = imgScale.value;
+            const x = imgPanX.value;
+            const y = imgPanY.value;
+            featureImg.style.transform = `scale(${s}) translate(${x}px, ${y}px)`;
+        }
+
+        imgScale.addEventListener('input', applyImgTransform);
+        imgPanX.addEventListener('input', applyImgTransform);
+        imgPanY.addEventListener('input', applyImgTransform);
+
+        document.getElementById('reset-scale').addEventListener('click', () => { imgScale.value = 1; applyImgTransform(); });
+        document.getElementById('reset-pan-x').addEventListener('click', () => { imgPanX.value = 0; applyImgTransform(); });
+        document.getElementById('reset-pan-y').addEventListener('click', () => { imgPanY.value = 0; applyImgTransform(); });
+
+        // Auto Balanced 2-line Headline Handler
+        function updateHeadline() {
+            const text = headlineInput.value.trim();
+            const fSize = Number(fontSizeInput.value);
+            const margin = Number(sideMarginInput.value);
+
+            const container = document.querySelector('.headline-wrapper');
+            container.style.paddingLeft = `${margin}px`;
+            container.style.paddingRight = `${margin}px`;
+
+            cardHeadlineDisp.style.fontSize = `${fSize}px`;
+            cardHeadlineDisp.textContent = text;
+        }
+
+        headlineInput.addEventListener('input', updateHeadline);
+        fontSizeInput.addEventListener('input', updateHeadline);
+        sideMarginInput.addEventListener('input', updateHeadline);
+
+        // Toggles & Ad Cycle
+        toggleComment.addEventListener('change', (e) => {
+            commentBox.style.display = e.target.checked ? 'flex' : 'none';
+        });
+
+        toggleAd.addEventListener('change', refreshCardLayout);
+
+        adCycleSelect.addEventListener('change', (e) => {
+            adImgDisp.src = e.target.value;
+        });
+
+        // Download Action (Captures exact layout including Ad Banner)
+        downloadBtn.addEventListener('click', () => {
+            downloadBtn.textContent = "ডাউনলোড তৈরি হচ্ছে...";
+            downloadBtn.disabled = true;
+
+            const hasAd = toggleAd.checked;
+            const targetHeight = hasAd ? 1920 : 1642;
+            const currentTransform = photocard.style.transform;
+            
+            photocard.style.transform = 'none';
+
+            html2canvas(photocard, {
+                width: 1920,
+                height: targetHeight,
+                scale: 1,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#006D17'
+            }).then(canvas => {
+                photocard.style.transform = currentTransform;
+                
+                const link = document.createElement('a');
+                link.download = `DrishtiRekha_Photocard_${Date.now()}.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 0.98);
+                link.click();
+
+                downloadBtn.textContent = "ফটোকার্ড ডাউনলোড করুন (HD JPG)";
+                downloadBtn.disabled = false;
+            }).catch(err => {
+                console.error(err);
+                alert('ফটোকার্ড জেনারেট করতে সমস্যা দেখা দিয়েছে!');
+                photocard.style.transform = currentTransform;
+                downloadBtn.textContent = "ফটোকার্ড ডাউনলোড করুন (HD JPG)";
+                downloadBtn.disabled = false;
+            });
+        });
+
+        // Initial Initialization
+        setTodayDate();
+        refreshCardLayout();
+        updateHeadline();
+    </script>
+</body>
+</html>
